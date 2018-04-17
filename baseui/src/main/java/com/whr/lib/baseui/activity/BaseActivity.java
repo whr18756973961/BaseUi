@@ -6,11 +6,14 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.Toast;
 
 import com.whr.lib.baseui.R;
+import com.whr.lib.baseui.helper.UiCoreHelper;
 import com.whr.lib.baseui.impl.BaseView;
 import com.whr.lib.baseui.swipeback.SwipeBackActivity;
 import com.whr.lib.baseui.utils.FragmentUtils;
@@ -32,7 +35,7 @@ public abstract class BaseActivity extends SwipeBackActivity implements BaseView
     /**
      * 对话框
      */
-    private ProgressDialog mWaitDialog;
+    private Dialog mWaitDialog;
     /**
      * 是否支持双击，默认为不支持
      */
@@ -149,45 +152,56 @@ public abstract class BaseActivity extends SwipeBackActivity implements BaseView
         FragmentUtils.popFragment(getSupportFragmentManager());
         return false;
     }
+
     /**
      * 当activity结束时候调用
      */
     public void onActivityFinish() {
         finish();
     }
+
     @Override
     public void showWaitDialog() {
-
+        showWaitDialog("精彩值得等待");
     }
 
     @Override
     public void showWaitDialog(String message) {
-
+        if (TextUtils.isEmpty(message))
+            showWaitDialog();
+        else
+            showWaitDialog(message, true);
     }
 
     @Override
     public void showWaitDialog(String message, boolean cancelable) {
-
+        if (mWaitDialog == null) {
+            mWaitDialog = UiCoreHelper.getProxy().waitDialog();
+            mWaitDialog.setCancelable(cancelable);
+        }
+        mWaitDialog.show();
     }
 
     @Override
     public boolean isWaitDialogShow() {
-        return false;
+        return mWaitDialog.isShowing();
     }
 
     @Override
     public Dialog getWaitDialog() {
-        return null;
+        return mWaitDialog;
     }
 
     @Override
     public void hideWaitDialog() {
-
+        if (mWaitDialog != null && mWaitDialog.isShowing()) {
+            mWaitDialog.dismiss();
+        }
     }
 
     @Override
     public void showToast(String msg) {
-
+        Toast.makeText(UiCoreHelper.getProxy().getContext(), msg, Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -208,5 +222,54 @@ public abstract class BaseActivity extends SwipeBackActivity implements BaseView
     @Override
     public void hideStatusView() {
 
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        UiCoreHelper.getProxy().onActivityStart(this);
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        UiCoreHelper.getProxy().onActivityRestart(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        UiCoreHelper.getProxy().onActivityResume(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        UiCoreHelper.getProxy().onActivityPause(this);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        UiCoreHelper.getProxy().onActivityStop(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        UiCoreHelper.getProxy().onActivityDestory(this);
+    }
+
+    /**
+     * 重写此方法是为了Fragment的onActivityResult
+     *
+     * @param requestCode
+     * @param resultCode
+     * @param data
+     */
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        UiCoreHelper.getProxy().onActivityResult(this, requestCode, resultCode, data);
     }
 }

@@ -12,8 +12,10 @@ import android.widget.LinearLayout;
 
 import com.whr.lib.baseui.R;
 import com.whr.lib.baseui.activity.BaseActivity;
+import com.whr.lib.baseui.helper.UiCoreHelper;
 import com.whr.lib.baseui.impl.BaseView;
 import com.whr.lib.baseui.swipeback.SwipeBackFragment;
+import com.whr.lib.baseui.widget.StatusView;
 
 /**
  * Created by 开发 on 2018/4/16.
@@ -37,6 +39,8 @@ public abstract class BaseFragment extends SwipeBackFragment implements BaseView
     public View mContentView;
 
     public View mFakeStatusBar;
+
+    public StatusView mStatusView;
 
     @Override
     public void onAttach(Activity activity) {
@@ -125,58 +129,121 @@ public abstract class BaseFragment extends SwipeBackFragment implements BaseView
         super.setSwipeBackEnable(enable);
     }
 
-    @Override
+    /**
+     * 显示对话框
+     */
     public void showWaitDialog() {
-
+        mActivity.showWaitDialog();
     }
 
     @Override
     public void showWaitDialog(String message) {
-
+        mActivity.showWaitDialog(message);
     }
 
     @Override
     public void showWaitDialog(String message, boolean cancelable) {
-
+        mActivity.showWaitDialog(message, cancelable);
     }
 
     @Override
     public boolean isWaitDialogShow() {
-        return false;
+        return mActivity.isWaitDialogShow();
     }
 
     @Override
     public Dialog getWaitDialog() {
-        return null;
+        return mActivity.getWaitDialog();
     }
 
-    @Override
     public void hideWaitDialog() {
-
+        mActivity.hideWaitDialog();
     }
 
     @Override
     public void showToast(String msg) {
-
+        mActivity.showToast(msg);
+    }
+    private void initStatusView() {
+        if (mStatusView == null)
+            mStatusView = new StatusView(this);
     }
 
     @Override
     public void showStatusEmptyView(String emptyMessage) {
-
+        initStatusView();
+        mStatusView.showEmptyView(emptyMessage);
     }
 
     @Override
     public void showStatusErrorView(String emptyMessage) {
-
+        initStatusView();
+        mStatusView.showErrorView(emptyMessage);
     }
 
     @Override
     public void showStatusLoadingView(String loadingMessage) {
-
+        initStatusView();
+        mStatusView.showLoadingView(loadingMessage);
     }
 
     @Override
     public void hideStatusView() {
+        if (mStatusView != null)
+            mStatusView.hideStatusView();
+    }
 
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        UiCoreHelper.getProxy().onFragmentActivityCreated(this);
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        UiCoreHelper.getProxy().onFragmentCreate(this);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        UiCoreHelper.getProxy().onFragmentStart(this);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        UiCoreHelper.getProxy().onFragmentStop(this);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        UiCoreHelper.getProxy().onFragmentResume(this);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        UiCoreHelper.getProxy().onFragmentPause(this);
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        UiCoreHelper.getProxy().onFragmentDestroyView(this);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        UiCoreHelper.getProxy().onFragmentDestroy(this);
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        UiCoreHelper.getProxy().onFragmentDetach(this);
     }
 }

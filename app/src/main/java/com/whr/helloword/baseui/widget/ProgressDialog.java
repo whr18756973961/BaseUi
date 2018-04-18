@@ -17,7 +17,7 @@ public class ProgressDialog {
     public static Dialog progressBar;
     private static TextView tv_tips;
 
-    private ProgressDialog(Context context) {
+    public ProgressDialog(Context context) {
         if (progressBar == null) {
             progressBar = new Dialog(context);
             progressBar.setContentView(R.layout.dialog_progressbar);

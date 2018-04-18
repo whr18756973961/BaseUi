@@ -40,7 +40,7 @@ public class UiCoreProxyImpl extends IUiCoreProxy {
 
 	@Override
 	public Dialog waitDialog() {
-		return ProgressDialog.progressBar;
+		return new ProgressDialog();
 	}
 
 	@Override

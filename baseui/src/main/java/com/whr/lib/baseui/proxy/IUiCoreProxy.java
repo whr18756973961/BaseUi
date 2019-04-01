@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.ColorRes;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.RecyclerView;
 
 /**
  * Created by whr on 2018/4/16.
@@ -39,18 +40,29 @@ public abstract class IUiCoreProxy {
     public abstract int colorPrimaryDark();
 
     /**
+     * 配置下拉刷新空间主题色
+     * @return
+     */
+    public abstract int[] colorSchemeResources();
+    /**
      * 配置主题颜色
-
+     *
      * @return
      */
     @ColorRes
     public abstract int colorAccent();
-
     /**
-     * 全局配置等待对话框
+     * 配置下拉滚动状态
+     * @param recyclerView
+     * @param newState
+     */
+    public abstract void onScrollStateChanged(RecyclerView recyclerView, int newState);
+    /**
+     * 全局配置等待对话框的布局文件
+     *
      * @return
      */
-    public abstract Dialog waitDialog();
+    public abstract int waitDialogRes();
 
     /**
      * 配置登陆的fragment
@@ -230,6 +242,25 @@ public abstract class IUiCoreProxy {
      * @param fragment
      */
     public void onFragmentDetach(Fragment fragment) {
+    }
+
+    /**
+     * 在MVP中使用网络的调用，比如：retrofit/okhttp/rxjava等
+     * 主要用于收集网络请求，在页面结束的时候取消这些网络请求
+     *
+     * @param object
+     * @param t
+     */
+    public <T> T onMvpCall(Object object, T t) {
+        return t;
+    }
+
+    /**
+     * 在页面退出的时候调用，会取消所有的网络请求
+     *
+     * @param object
+     */
+    public void onMvpDestory(Object object) {
     }
 
 }

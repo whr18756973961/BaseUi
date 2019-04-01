@@ -1,12 +1,13 @@
 package com.whr.lib.baseui.activity;
 
 import android.app.Dialog;
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.IdRes;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
+import android.util.SparseArray;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -14,15 +15,17 @@ import android.widget.Toast;
 
 import com.whr.lib.baseui.R;
 import com.whr.lib.baseui.helper.UiCoreHelper;
-import com.whr.lib.baseui.impl.BaseView;
+import com.whr.lib.baseui.mvp.BaseMvpView;
 import com.whr.lib.baseui.swipeback.SwipeBackActivity;
 import com.whr.lib.baseui.utils.FragmentUtils;
+import com.whr.lib.baseui.utils.StatusBarUtil;
+import com.whr.lib.baseui.widget.WaitProgressDialog;
 
 /**
  * Created by whr on 2018/4/16.
  */
 
-public abstract class BaseActivity extends SwipeBackActivity implements BaseView {
+public abstract class BaseActivity extends SwipeBackActivity implements BaseMvpView, View.OnClickListener {
 
     private BaseActivity mActivity;
     /**
@@ -33,9 +36,14 @@ public abstract class BaseActivity extends SwipeBackActivity implements BaseView
     private FrameLayout mFlRootLayout;
 
     /**
+     * 控件声明的集合
+     */
+    private SparseArray<View> mViews;
+
+    /**
      * 对话框
      */
-    private Dialog mWaitDialog;
+    private WaitProgressDialog mWaitDialog;
     /**
      * 是否支持双击，默认为不支持
      */
@@ -62,6 +70,32 @@ public abstract class BaseActivity extends SwipeBackActivity implements BaseView
         initView(mFlRootLayout);
     }
 
+    public <V extends View> V findView(@IdRes int viewId, boolean click) {
+        if (mViews == null) mViews = new SparseArray<>();
+        V view = (V) mViews.get(viewId);
+        if (view != null) return view;
+        view = (V) findViewById(viewId);
+        mViews.put(viewId, view);
+        if (click) view.setOnClickListener(this);
+        return view;
+    }
+
+    /**
+     * @param view
+     * @param <E>
+     */
+    public <E extends View> void setOnClick(E view) {
+        if (view == null) return;
+        view.setOnClickListener(this);
+    }
+
+    /**
+     * 设置状态栏颜色
+     * 重写可以改变状态栏颜色
+     */
+    public void setStatusBar() {
+        StatusBarUtil.setColor(this, getResources().getColor(UiCoreHelper.getProxy().colorPrimaryDark()), 0);
+    }
 
     /**
      * 设置应用布局时是否考虑系统窗口布局<br/>
@@ -161,6 +195,15 @@ public abstract class BaseActivity extends SwipeBackActivity implements BaseView
     }
 
     @Override
+    public boolean swipeBackPriority() {
+        if (getLayoutId() == 0) {
+            return super.swipeBackPriority();
+        } else {
+            return getSupportFragmentManager().getBackStackEntryCount() <= 0;
+        }
+    }
+
+    @Override
     public void showWaitDialog() {
         showWaitDialog("精彩值得等待");
     }
@@ -176,10 +219,9 @@ public abstract class BaseActivity extends SwipeBackActivity implements BaseView
     @Override
     public void showWaitDialog(String message, boolean cancelable) {
         if (mWaitDialog == null) {
-            mWaitDialog = UiCoreHelper.getProxy().waitDialog();
-            mWaitDialog.setCancelable(cancelable);
+            mWaitDialog = new WaitProgressDialog(this);
         }
-        mWaitDialog.show();
+        mWaitDialog.show(message, cancelable);
     }
 
     @Override
@@ -189,7 +231,7 @@ public abstract class BaseActivity extends SwipeBackActivity implements BaseView
 
     @Override
     public Dialog getWaitDialog() {
-        return mWaitDialog;
+        return mWaitDialog.getWaitDialog();
     }
 
     @Override
@@ -219,6 +261,10 @@ public abstract class BaseActivity extends SwipeBackActivity implements BaseView
 
     }
 
+    @Override
+    public void showStatusLoadingView(String loadingMessage, boolean isHasMinTime) {
+
+    }
     @Override
     public void hideStatusView() {
 
@@ -271,5 +317,10 @@ public abstract class BaseActivity extends SwipeBackActivity implements BaseView
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         UiCoreHelper.getProxy().onActivityResult(this, requestCode, resultCode, data);
+    }
+
+    @Override
+    public void onClick(View v) {
+
     }
 }

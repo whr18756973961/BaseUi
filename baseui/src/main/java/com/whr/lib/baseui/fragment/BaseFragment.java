@@ -3,27 +3,68 @@ package com.whr.lib.baseui.fragment;
 import android.app.Activity;
 import android.app.Dialog;
 import android.os.Bundle;
+import android.support.annotation.IdRes;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.whr.lib.baseui.R;
 import com.whr.lib.baseui.activity.BaseActivity;
 import com.whr.lib.baseui.helper.UiCoreHelper;
-import com.whr.lib.baseui.impl.BaseView;
+import com.whr.lib.baseui.mvp.BaseMvpView;
 import com.whr.lib.baseui.swipeback.SwipeBackFragment;
+import com.whr.lib.baseui.utils.StatusBarUtils;
 import com.whr.lib.baseui.widget.StatusView;
 
 /**
  * Created by 开发 on 2018/4/16.
  */
 
-public abstract class BaseFragment extends SwipeBackFragment implements BaseView {
+public abstract class BaseFragment extends SwipeBackFragment implements BaseMvpView, View.OnClickListener {
     public BaseActivity mActivity;
     public static final int FFCID = R.id.fragment_base_root;
+    /**
+     *
+     */
+    public View mHeaderView;
+    /**
+     * 顶部返回键ImageView
+     */
+    public ImageView mIvHeaderBack;
+    /**
+     * 顶部左边的ImageView
+     */
+    public ImageView mIvHeaderLeft;
+    /**
+     * 顶部中间的ImageView
+     */
+    public ImageView mIvHeaderCenter;
+    /**
+     * 顶部右边的ImageView
+     */
+    public ImageView mIvHeaderRight;
+    /**
+     * 顶部中间的标题TextView
+     */
+    public TextView mTvHeaderTitle;
+    /**
+     * 顶部左边的TextView
+     */
+    public TextView mTvHeaderLeft;
+    /**
+     * 顶部右边的TextView
+     */
+    public TextView mTvHeaderRight;
+    /**
+     * 顶部下面的Line
+     */
+    public View mViewHeaderLine;
+
     /**
      * 根布局->fragment_base
      */
@@ -60,9 +101,15 @@ public abstract class BaseFragment extends SwipeBackFragment implements BaseView
             // 虚拟状态栏
             mFakeStatusBar = LayoutInflater.from(getContext()).inflate(R.layout.layout_fake_statusbar, mRootLayout, false);
             mFakeStatusBar.setVisibility(View.GONE);
-//            mFakeStatusBar.setBackgroundColor(getContext().getResources().getColor(UiCoreHelper.getProxy().colorPrimaryDark()));
             mRootLayout.addView(mFakeStatusBar, 0);
-
+            ViewGroup.LayoutParams layoutParams = mFakeStatusBar.getLayoutParams();
+            layoutParams.height = StatusBarUtils.getStatusBarHeight(getActivity());
+            mFakeStatusBar.setLayoutParams(layoutParams);
+            mFakeStatusBar.setBackgroundColor(getContext().getResources().getColor(UiCoreHelper.getProxy().colorPrimaryDark()));
+            // 顶部Header
+            mHeaderView = LayoutInflater.from(getContext()).inflate(R.layout.layout_header, mRootLayout, false);
+            mHeaderView.setBackgroundColor(getResources().getColor(UiCoreHelper.getProxy().colorPrimary()));
+            mRootLayout.addView(mHeaderView, 1);
             // 内容布局
             mContentView = LayoutInflater.from(getContext()).inflate(getLayoutId(), mRootLayout, false);
             mRootLayout.addView(mContentView, 2);
@@ -76,12 +123,76 @@ public abstract class BaseFragment extends SwipeBackFragment implements BaseView
         return attachToSwipeBack(mRootView);
     }
 
+
+    /**
+     * 初始化顶部布局控件
+     */
+    private void initHeaderView() {
+        mHeaderView.setBackgroundResource(UiCoreHelper.getProxy().colorPrimary());
+
+        mTvHeaderLeft = findView(R.id.tv_header_left, true);
+        mTvHeaderTitle = findView(R.id.tv_header_title, true);
+        mTvHeaderRight = findView(R.id.tv_header_right, true);
+
+//        mTvHeaderLeft.setTextColor(getResources().getColor(UiCoreHelper.getProxy().headerTextColor()));
+//        mTvHeaderTitle.setTextColor(getResources().getColor(UiCoreHelper.getProxy().headerTextColor()));
+//        mTvHeaderRight.setTextColor(getResources().getColor(UiCoreHelper.getProxy().headerTextColor()));
+
+        mIvHeaderLeft = findView(R.id.iv_header_left, true);
+        mIvHeaderCenter = findView(R.id.iv_header_center, true);
+        mIvHeaderRight = findView(R.id.iv_header_right, true);
+
+//        mViewHeaderLine = findView(R.id.view_header_line);
+//        UiCoreHelper.getProxy().onInitHeaderLine(this, mViewHeaderLine);
+
+        mIvHeaderBack = findView(R.id.iv_header_back, false);
+//        if (UiCoreHelper.getProxy().headerBackRes() != 0)
+//            mIvHeaderBack.setImageResource(UiCoreHelper.getProxy().headerBackRes());
+        mIvHeaderBack.setOnClickListener(this);
+    }
+
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         handleBundle(getArguments());
         initView(view);
     }
+
+    /**
+     * 控件注册，默认不注册点击注册<br/>
+     * 如果需要注册点击时间，请调用{@link BaseFragment#setOnClick(View)}方法
+     *
+     * @param viewId
+     * @param <E>
+     * @return
+     */
+    public <E extends View> E findView(@IdRes int viewId) {
+        return findView(viewId, false);
+    }
+
+    /**
+     * 控件注册
+     *
+     * @param viewId 控件ID
+     * @param click  是否注册点击事件，如果注册，会调用{@link BaseFragment#}方法
+     * @param <E>
+     * @return
+     */
+    public <E extends View> E findView(@IdRes int viewId, boolean click) {
+        E view = getView().findViewById(viewId);
+        if (click) setOnClick(view);
+        return view;
+    }
+
+    /**
+     * @param view
+     * @param <E>
+     */
+    public <E extends View> void setOnClick(E view) {
+        if (view == null) return;
+        view.setOnClickListener(this);
+    }
+
 
     /**
      * 获取布局文件ID
@@ -164,6 +275,7 @@ public abstract class BaseFragment extends SwipeBackFragment implements BaseView
     public void showToast(String msg) {
         mActivity.showToast(msg);
     }
+
     private void initStatusView() {
         if (mStatusView == null)
             mStatusView = new StatusView(this);
@@ -245,5 +357,10 @@ public abstract class BaseFragment extends SwipeBackFragment implements BaseView
     public void onDetach() {
         super.onDetach();
         UiCoreHelper.getProxy().onFragmentDetach(this);
+    }
+
+    @Override
+    public void onClick(View v) {
+
     }
 }

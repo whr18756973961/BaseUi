@@ -1,12 +1,12 @@
-package com.whr.lib.baseui.impl;
+package com.whr.lib.baseui.mvp;
 
 import android.app.Dialog;
 
 /**
- * Created by 开发 on 2018/4/16.
+ * Created by whr on 2018/6/6.
  */
 
-public interface BaseView {
+public interface BaseMvpView {
     void showWaitDialog();
 
     void showWaitDialog(String message);
@@ -27,5 +27,8 @@ public interface BaseView {
 
     void showStatusLoadingView(String loadingMessage);
 
+    void showStatusLoadingView(String loadingMessage, boolean isHasMinTime);
+
     void hideStatusView();
+
 }

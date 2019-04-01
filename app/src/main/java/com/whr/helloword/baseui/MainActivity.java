@@ -17,4 +17,6 @@ public class MainActivity extends BaseActivity {
     protected void initView(View rootView) {
         showWaitDialog();
     }
+
+
 }
